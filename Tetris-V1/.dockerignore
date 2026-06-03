@@ -1,0 +1,12 @@
+node_modules
+coverage
+.git
+.github
+.vscode
+dist
+build
+.trivycache
+*.log
+trivy-fs-report.json
+trivy-image-report.json
+trivy-sbom.json
