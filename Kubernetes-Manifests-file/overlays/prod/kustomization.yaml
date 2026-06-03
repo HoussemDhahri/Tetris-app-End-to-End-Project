@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - ingress.yaml
+
+namespace: tetris-prod
+
+replicas:
+  - name: tetris
+    count: 3
+
+images:
+  - name: houssemdhahri93/tetris
+    newTag: "1.0.0"
+
+patches:
+  - target:
+      kind: Deployment
+      name: tetris
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"

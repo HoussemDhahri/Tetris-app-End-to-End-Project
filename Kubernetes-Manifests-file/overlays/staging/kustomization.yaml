@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - ingress.yaml
+
+namespace: tetris-staging
+
+replicas:
+  - name: tetris
+    count: 1
+
+images:
+  - name: houssemdhahri93/tetris
+    newTag: staging
+
+patches:
+  - target:
+      kind: Deployment
+      name: tetris
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env
+        value:
+          - name: APP_ENV
+            value: staging
+          - name: LOG_LEVEL
+            value: debug

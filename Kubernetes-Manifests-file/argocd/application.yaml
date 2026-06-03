@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: tetris-apps
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - env: staging
+            namespace: tetris-staging
+          - env: prod
+            namespace: tetris-prod
+
+  template:
+    metadata:
+      name: tetris-{{env}}
+    spec:
+      project: default
+
+      source:
+        repoURL: https://github.com/HoussemDhahri/Tetris-Devsecops-End-to-End-Project.git
+        targetRevision: main
+        path: Kubernetes-Manifests-file/overlays/{{env}}
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{namespace}}"
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
