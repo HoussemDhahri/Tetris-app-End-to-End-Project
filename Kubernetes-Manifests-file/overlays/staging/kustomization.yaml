@@ -14,7 +14,7 @@ replicas:
 images:
 - name: houssemdhahri93/tetris
   newName: houssemdhahri93/tetris
-  newTag: v1.0.0
+  newTag: v2.0.0
 
 patches:
 - patch: |-
