@@ -1,0 +1,22 @@
+grafana:
+  enabled: true
+
+  persistence:
+    enabled: true
+    size: 10Gi
+
+  service:
+    type: ClusterIP
+
+prometheus:
+  prometheusSpec:
+    retention: 10d
+
+alertmanager:
+  enabled: true
+
+nodeExporter:
+  enabled: true
+
+kubeStateMetrics:
+  enabled: true
