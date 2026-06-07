@@ -3,20 +3,25 @@ grafana:
 
   persistence:
     enabled: true
+    type: pvc
+    accessModes:
+      - ReadWriteOnce
     size: 10Gi
-
-  service:
-    type: ClusterIP
+    storageClassName: standard
 
 prometheus:
   prometheusSpec:
-    retention: 10d
+    retention: 7d
+
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          storageClassName: standard
+          resources:
+            requests:
+              storage: 20Gi
 
 alertmanager:
-  enabled: true
-
-nodeExporter:
-  enabled: true
-
-kubeStateMetrics:
   enabled: true
