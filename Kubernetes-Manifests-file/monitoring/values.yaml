@@ -3,11 +3,8 @@ grafana:
 
   persistence:
     enabled: true
-    type: pvc
-    accessModes:
-      - ReadWriteOnce
-    size: 10Gi
     storageClassName: standard
+    size: 10Gi
 
 prometheus:
   prometheusSpec:
@@ -16,9 +13,9 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
+          storageClassName: standard
           accessModes:
             - ReadWriteOnce
-          storageClassName: standard
           resources:
             requests:
               storage: 20Gi
