@@ -51,13 +51,6 @@ grafana:
         revision: 1
         datasource: Loki
 
-  # Sidecar لقراءة ConfigMaps
-  sidecar:
-    dashboards:
-      enabled: true
-      label: grafana_dashboard
-      labelValue: "1"
-
 prometheus:
   prometheusSpec:
     retention: 10d
