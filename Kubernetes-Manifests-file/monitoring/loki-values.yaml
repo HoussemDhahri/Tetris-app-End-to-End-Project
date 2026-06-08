@@ -1,14 +1,5 @@
 deploymentMode: SingleBinary
 
-loki:
-  commonConfig:
-    replication_factor: 1
-
-  storage:
-    type: filesystem
-
-  auth_enabled: false
-
 singleBinary:
   replicas: 1
   persistence:
@@ -16,11 +7,28 @@ singleBinary:
     size: 10Gi
     storageClassName: standard
 
+simpleScalable:
+  enabled: false
+
+backend:
+  replicas: 0
+
+read:
+  replicas: 0
+
+write:
+  replicas: 0
+
+loki:
+  commonConfig:
+    replication_factor: 1
+  storage:
+    type: filesystem
+  auth_enabled: false
+
 monitoring:
   selfMonitoring:
     enabled: false
-    grafanaAgent:
-      installOperator: false
 
 lokiCanary:
   enabled: false
