@@ -12,7 +12,7 @@ spec:
       targetRevision: 6.6.2
       helm:
         valueFiles:
-          - $values/Kubernetes-Manifests-file/argocd/loki-values.yaml
+          - $values/Kubernetes-Manifests-file/monitoring/loki-values.yaml
 
     - repoURL: https://github.com/HoussemDhahri/Tetris-Devsecops-End-to-End-Project.git
       targetRevision: main
