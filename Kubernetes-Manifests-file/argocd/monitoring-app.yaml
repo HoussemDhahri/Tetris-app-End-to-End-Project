@@ -19,6 +19,10 @@ spec:
       targetRevision: main
       ref: values
 
+    - repoURL: https://github.com/HoussemDhahri/Tetris-Devsecops-End-to-End-Project.git
+      targetRevision: main
+      path: Kubernetes-Manifests-file/monitoring/dashboards
+
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
