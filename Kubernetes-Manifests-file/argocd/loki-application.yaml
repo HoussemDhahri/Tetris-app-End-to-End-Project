@@ -6,17 +6,13 @@ metadata:
 spec:
   project: default
 
-  sources:
-    - repoURL: https://grafana.github.io/helm-charts
-      chart: loki
-      targetRevision: 6.6.2
-      helm:
-        valueFiles:
-          - $values/Kubernetes-Manifests-file/monitoring/loki-values.yaml
-
-    - repoURL: https://github.com/HoussemDhahri/Tetris-Devsecops-End-to-End-Project.git
-      targetRevision: main
-      ref: values
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: loki
+    targetRevision: 6.6.2
+    helm:
+      valueFiles:
+        - https://raw.githubusercontent.com/HoussemDhahri/Tetris-Devsecops-End-to-End-Project/main/Kubernetes-Manifests-file/monitoring/loki-values.yaml
 
   destination:
     server: https://kubernetes.default.svc
