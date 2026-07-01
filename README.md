@@ -10,14 +10,11 @@
 <img src="https://img.shields.io/badge/Trivy-Security-1904DA?style=for-the-badge&logo=aquasecurity&logoColor=white"/>
 <img src="https://img.shields.io/badge/SonarQube-Quality-4E9BCD?style=for-the-badge&logo=sonarqube&logoColor=white"/>
 <img src="https://img.shields.io/badge/Node.js-22-339933?style=for-the-badge&logo=nodedotjs&logoColor=white"/>
-<img src="https://img.shields.io/badge/Prometheus-Monitoring-E6522C?style=for-the-badge&logo=prometheus&logoColor=white"/>
-<img src="https://img.shields.io/badge/Grafana-Dashboards-F46800?style=for-the-badge&logo=grafana&logoColor=white"/>
-<img src="https://img.shields.io/badge/Loki-Log%20Aggregation-F5A623?style=for-the-badge&logo=grafana&logoColor=white"/>
 
 <br/>
 <br/>
 
-> **A production-grade DevSecOps pipeline** that automates the full software delivery lifecycle of a Tetris web application — from source code to a secure, monitored Kubernetes deployment — with security baked in at every stage.
+> **A production-grade DevSecOps pipeline** that automates the full software delivery lifecycle of a Tetris web application — from source code to a secure Kubernetes deployment — with security baked in at every stage.
 
 </div>
 
@@ -31,7 +28,6 @@
 - [🔄 CI/CD Pipeline](#-cicd-pipeline)
 - [🔐 Security (DevSec)](#-security-devsec)
 - [☸️ Kubernetes & GitOps](#️-kubernetes--gitops)
-- [📈 Monitoring Stack](#-monitoring-stack)
 - [⚙️ Prerequisites](#️-prerequisites)
 - [🚀 Getting Started](#-getting-started)
 - [🌍 Environments](#-environments)
@@ -51,7 +47,6 @@ This project implements a **complete DevSecOps pipeline** for a Tetris web appli
 | 🚢 **Continuous Delivery** | GitOps with ArgoCD — Staging auto-deploy, Prod manual approval |
 | ☸️ **Orchestration** | Kubernetes with Kustomize overlays (base / staging / prod) |
 | 📋 **SBOM Generation** | CycloneDX Software Bill of Materials per image build |
-| 📈 **Monitoring** | Prometheus + Grafana (metrics) + Loki (log aggregation) — deployed via ArgoCD |
 
 ---
 
@@ -90,20 +85,12 @@ This project implements a **complete DevSecOps pipeline** for a Tetris web appli
                                ┌────────────▼─────────────┐
                                │         ArgoCD            │
                                │  (Watches manifests repo) │
-                               └──┬──────────┬────────┬───┘
-                                  │          │        │
-                      ┌───────────▼──┐  ┌────▼──────┐ │
-                      │  K8s STAGING │  │ K8s PROD  │ │
-                      │  (Auto Sync) │  │ (Approved)│ │
-                      └──────────────┘  └───────────┘ │
-                                                       │
-                                          ┌────────────▼──────────────┐
-                                          │     Monitoring Namespace   │
-                                          │                            │
-                                          │  📈 Prometheus (metrics)   │
-                                          │  📊 Grafana  (dashboards)  │
-                                          │  📋 Loki     (logs)        │
-                                          └────────────────────────────┘
+                               └──┬──────────┬─────────────┘
+                                  │          │
+                      ┌───────────▼──┐  ┌────▼──────┐
+                      │  K8s STAGING │  │ K8s PROD  │
+                      │  (Auto Sync) │  │ (Approved)│
+                      └──────────────┘  └───────────┘
 ```
 
 ---
@@ -124,18 +111,12 @@ Tetris-Devsecops-End-to-End-Project/
     │
     ├── argocd/                            # ArgoCD Application definitions
     │   ├── app-staging.yaml              # Tetris — Staging ArgoCD App
-    │   ├── app-prod.yaml                 # Tetris — Production ArgoCD App
-    │   ├── monitoring-app.yaml           # Prometheus + Grafana ArgoCD App
-    │   └── loki-application.yaml         # Loki log aggregation ArgoCD App
+    │   └── app-prod.yaml                 # Tetris — Production ArgoCD App
     │
     ├── base/                              # Shared Kubernetes base configs
     │   ├── deployment.yaml               # Base Deployment manifest
     │   ├── service.yaml                  # Service definition
     │   └── kustomization.yaml            # Base kustomization
-    │
-    ├── monitoring/                        # Monitoring stack Helm values
-    │   ├── values.yaml                   # Prometheus + Grafana Helm values
-    │   └── loki-values.yaml              # Loki Helm values
     │
     └── overlays/                          # Environment-specific overrides
         ├── staging/
@@ -275,54 +256,6 @@ images:
 
 ---
 
-## 📈 Monitoring Stack
-
-The monitoring stack is fully **GitOps-managed** via ArgoCD and deployed to a dedicated namespace in Kubernetes using **Helm values** stored in the repo.
-
-### Components
-
-| Component | Role | ArgoCD App |
-|-----------|------|-----------|
-| **Prometheus** | Metrics collection & alerting | `monitoring-app.yaml` |
-| **Grafana** | Visualization & dashboards | `monitoring-app.yaml` |
-| **Loki** | Log aggregation from all pods | `loki-application.yaml` |
-
-### Architecture
-
-```
- Kubernetes Pods
-      │  (metrics scrape)        │  (log shipping)
-      ▼                          ▼
- Prometheus ◄──────────    Promtail / Loki
-      │                          │
-      └──────────┬───────────────┘
-                 ▼
-             Grafana
-        (unified dashboards:
-         metrics + logs)
-```
-
-### Helm Values
-
-| File | Description |
-|------|-------------|
-| `monitoring/values.yaml` | Prometheus stack configuration (scrape intervals, retention, Grafana datasources) |
-| `monitoring/loki-values.yaml` | Loki configuration (storage, retention, chunk settings) |
-
-### Deploy Monitoring via ArgoCD
-
-```bash
-# Deploy Prometheus + Grafana
-kubectl apply -f Kubernetes-Manifests-file/argocd/monitoring-app.yaml
-
-# Deploy Loki
-kubectl apply -f Kubernetes-Manifests-file/argocd/loki-application.yaml
-```
-
-> ArgoCD will automatically sync and deploy the Helm releases based on the values files in the repo.
-
----
-
 ## ⚙️ Prerequisites
 
 Make sure the following tools and services are installed and configured:
@@ -338,8 +271,6 @@ Make sure the following tools and services are installed and configured:
 | **ArgoCD** | GitOps controller | v2.x |
 | **Kubernetes** | Container orchestration | v1.28+ |
 | **Helm** | Kubernetes package manager | v3+ |
-| **Prometheus + Grafana** | Metrics & dashboards | kube-prometheus-stack |
-| **Loki** | Log aggregation | grafana/loki-stack |
 
 ### Jenkins Credentials Required
 
@@ -379,10 +310,6 @@ cd Tetris-Devsecops-End-to-End-Project
 # Tetris app
 kubectl apply -f Kubernetes-Manifests-file/argocd/app-staging.yaml
 kubectl apply -f Kubernetes-Manifests-file/argocd/app-prod.yaml
-
-# Monitoring stack
-kubectl apply -f Kubernetes-Manifests-file/argocd/monitoring-app.yaml
-kubectl apply -f Kubernetes-Manifests-file/argocd/loki-application.yaml
 ```
 
 ### 4. Trigger the Pipeline
@@ -445,8 +372,6 @@ These are accessible directly from the Jenkins build page under **Build Artifact
 <img src="https://img.shields.io/badge/Security-Shift--Left-red?style=flat-square"/>
 <img src="https://img.shields.io/badge/GitOps-ArgoCD-orange?style=flat-square"/>
 <img src="https://img.shields.io/badge/Pipeline-Jenkins-D24939?style=flat-square"/>
-<img src="https://img.shields.io/badge/Monitoring-Prometheus%20%2B%20Grafana-F46800?style=flat-square"/>
-<img src="https://img.shields.io/badge/Logs-Loki-F5A623?style=flat-square"/>
 <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square"/>
 
 </div>
