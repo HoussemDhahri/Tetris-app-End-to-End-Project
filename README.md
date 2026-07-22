@@ -1,22 +1,28 @@
 <div align="center">
 
-# 🎮 Tetris — DevSecOps End-to-End Project
+# 🎮 Tetris App — End-to-End DevOps & GitOps Project
 
-<img src="https://img.shields.io/badge/DevSecOps-End--to--End-blueviolet?style=for-the-badge&logo=shield&logoColor=white"/>
+<img src="https://img.shields.io/badge/DevOps-End--to--End-blueviolet?style=for-the-badge&logo=devops&logoColor=white"/>
 <img src="https://img.shields.io/badge/Jenkins-Pipeline-D24939?style=for-the-badge&logo=jenkins&logoColor=white"/>
 <img src="https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white"/>
 <img src="https://img.shields.io/badge/Kubernetes-GitOps-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white"/>
-<img src="https://img.shields.io/badge/ArgoCD-CD-EF7B4D?style=for-the-badge&logo=argo&logoColor=white"/>
-<img src="https://img.shields.io/badge/Trivy-Security-1904DA?style=for-the-badge&logo=aquasecurity&logoColor=white"/>
-<img src="https://img.shields.io/badge/SonarQube-Quality-4E9BCD?style=for-the-badge&logo=sonarqube&logoColor=white"/>
-<img src="https://img.shields.io/badge/Node.js-22-339933?style=for-the-badge&logo=nodedotjs&logoColor=white"/>
+<img src="https://img.shields.io/badge/ArgoCD-App--of--Apps-EF7B4D?style=for-the-badge&logo=argo&logoColor=white"/>
+<img src="https://img.shields.io/badge/SonarQube-Quality%20Gate-4E9BCD?style=for-the-badge&logo=sonarqube&logoColor=white"/>
+<img src="https://img.shields.io/badge/Trivy-Security%20Scan-1904DA?style=for-the-badge&logo=aquasecurity&logoColor=white"/>
+<img src="https://img.shields.io/badge/Node.js-Frontend-339933?style=for-the-badge&logo=nodedotjs&logoColor=white"/>
+<img src="https://img.shields.io/badge/Docker%20Hub-Registry-2496ED?style=for-the-badge&logo=docker&logoColor=white"/>
+<img src="https://img.shields.io/badge/Kustomize-Overlays-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white"/>
 
 <br/>
 <br/>
 
-> **A production-grade DevSecOps pipeline** that automates the full software delivery lifecycle of a Tetris web application — from source code to a secure Kubernetes deployment — with security baked in at every stage.
+> **A production-grade DevOps pipeline** that automates the full software delivery lifecycle of a Node.js Tetris game — from source code, through security scanning and quality gates, to a Kubernetes deployment managed with GitOps (ArgoCD), running **two live versions side by side**: `v1.0.0` in staging and `v2.0.0` in production.
 
 </div>
+
+> ⚠️ **Note:** The application source code (`Tetris-V1`, `Tetris-V2`) was not developed by me. This repository documents the **DevOps / Platform Engineering layer**: the Jenkins CI/CD pipeline, Kubernetes manifests (Kustomize), and GitOps delivery (ArgoCD). This project does **not** include a monitoring stack.
+
+**Repository:** https://github.com/HoussemDhahri/Tetris-app-End-to-End-Project
 
 ---
 
@@ -26,27 +32,26 @@
 - [🏗️ Architecture](#️-architecture)
 - [📁 Project Structure](#-project-structure)
 - [🔄 CI/CD Pipeline](#-cicd-pipeline)
-- [🔐 Security (DevSec)](#-security-devsec)
 - [☸️ Kubernetes & GitOps](#️-kubernetes--gitops)
+- [🌍 Environments & Versioning](#-environments--versioning)
 - [⚙️ Prerequisites](#️-prerequisites)
 - [🚀 Getting Started](#-getting-started)
-- [🌍 Environments](#-environments)
-- [📊 Reports & Artifacts](#-reports--artifacts)
+- [🗺️ Roadmap](#️-roadmap)
 
 ---
 
 ## 🎯 Overview
 
-This project implements a **complete DevSecOps pipeline** for a Tetris web application built with **Node.js**. It demonstrates industry best practices for:
+This project implements a **complete DevOps pipeline** for a Node.js Tetris game, demonstrating a real **version-promotion workflow** across two environments:
 
 | Pillar | Implementation |
-|--------|---------------|
-| 🔄 **Continuous Integration** | Jenkins pipeline triggered on every GitHub push |
-| 🔐 **Security Shift-Left** | Trivy FS scan + SonarQube SAST + Docker image scanning |
-| 📦 **Artifact Management** | Docker images versioned by Git tag / commit SHA |
-| 🚢 **Continuous Delivery** | GitOps with ArgoCD — Staging auto-deploy, Prod manual approval |
-| ☸️ **Orchestration** | Kubernetes with Kustomize overlays (base / staging / prod) |
-| 📋 **SBOM Generation** | CycloneDX Software Bill of Materials per image build |
+|--------|-----------------|
+| 🔄 **Continuous Integration** | A single Jenkins pipeline, building from `Tetris-V2`, triggered on every push |
+| 🛡️ **Quality & Security** | SonarQube quality gate + Trivy (filesystem, image & SBOM scanning) on every build |
+| 📦 **Containerization** | One Docker image (`houssemdhahri93/tetris`), pushed to Docker Hub |
+| 🚢 **Continuous Delivery** | GitOps with ArgoCD — staging auto-synced, production manually synced |
+| ☸️ **Orchestration** | Kubernetes with Kustomize (`base` + environment `overlays`) |
+| 🏷️ **Versioning** | Staging pinned to image tag `v1.0.0`, production pinned to `v2.0.0` |
 
 ---
 
@@ -56,83 +61,84 @@ This project implements a **complete DevSecOps pipeline** for a Tetris web appli
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                          DEVELOPER WORKFLOW                              │
 │                                                                          │
-│   git push ──► GitHub ──► Webhook ──► Jenkins Pipeline                  │
+│   git push ──► GitHub ──► Webhook ──► Jenkins (Tetris-V2)               │
 └──────────────────────────────────┬──────────────────────────────────────┘
                                    │
                     ┌──────────────▼──────────────┐
                     │       JENKINS CI/CD          │
                     │                              │
-                    │  ✅ Checkout & Tag Image     │
-                    │  ✅ Install Dependencies     │
-                    │  ✅ Lint + Unit Tests        │
-                    │  🔬 Trivy FS Scan            │
-                    │  📊 SonarQube Analysis       │
-                    │  🚦 Quality Gate             │
-                    │  🔨 npm build                │
-                    │  🐳 Docker Build             │
-                    │  🔬 Trivy Image Scan + SBOM  │
-                    │  📤 Push to DockerHub        │
-                    │  🔄 Update Staging Manifest  │
-                    │  ✋ Manual Approval (Prod)   │
-                    │  🔄 Update Prod Manifest     │
+                    │  ✅ Checkout & npm ci         │
+                    │  🧪 Lint + Unit Tests         │
+                    │  🛡️  Trivy FS Scan            │
+                    │  📊 SonarQube + Quality Gate  │
+                    │  🔨 npm run build             │
+                    │  🐳 Docker Build              │
+                    │  🛡️  Trivy Image Scan + SBOM  │
+                    │  📤 Push to Docker Hub        │
+                    │  🔄 Update Kustomize Image     │
+                    │  🔄 Git Push (GitOps repo)     │
                     └──────┬────────────┬──────────┘
                            │            │
                ┌───────────▼──┐    ┌────▼────────────┐
-               │   DockerHub  │    │   GitHub Repo    │
-               │  (Registry)  │    │ (GitOps Source)  │
+               │  Docker Hub  │    │   GitHub Repo    │
+               │(tetris image)│    │ (GitOps Source)  │
                └──────────────┘    └────────┬─────────┘
                                             │
                                ┌────────────▼─────────────┐
-                               │         ArgoCD            │
-                               │  (Watches manifests repo) │
-                               └──┬──────────┬─────────────┘
-                                  │          │
-                      ┌───────────▼──┐  ┌────▼──────┐
-                      │  K8s STAGING │  │ K8s PROD  │
-                      │  (Auto Sync) │  │ (Approved)│
-                      └──────────────┘  └───────────┘
+                               │           ArgoCD           │
+                               └──┬────────────────────┬───┘
+                                  │                     │
+                      ┌───────────▼──────────┐  ┌───────▼─────────────┐
+                      │   tetris-staging      │  │    tetris-prod       │
+                      │   (auto-sync)         │  │   (manual sync)      │
+                      │                       │  │                      │
+                      │   image: tetris       │  │   image: tetris      │
+                      │   tag:   v1.0.0       │  │   tag:   v2.0.0      │
+                      │   + Ingress           │  │   + Ingress          │
+                      └───────────────────────┘  └──────────────────────┘
 ```
+
+> ℹ️ Both environments deploy from the **same Kustomize base** (one `Deployment` + one `Service`). The only differences per environment are the **image tag** and the **Ingress** — everything else is shared, keeping staging and prod configuration-consistent by design.
 
 ---
 
 ## 📁 Project Structure
 
 ```
-Tetris-Devsecops-End-to-End-Project/
+Tetris-app-End-to-End-Project/
 │
-├── 📄 Jenkinsfile                          # Full CI/CD pipeline definition
+├── Tetris-V1/                          # Tetris source code — v1.0.0 (running in staging)
+├── Tetris-V2/                          # Tetris source code — v2.0.0 (running in prod, actively built by CI)
+├── Jenkinsfile                         # Single CI/CD pipeline (builds Tetris-V2)
 │
-├── 🎮 Tetris-V2/                           # Application source code (Node.js)
-│   ├── src/                               # Application source files
-│   ├── Dockerfile                         # Container image definition
-│   └── package.json                       # Node.js dependencies & scripts
-│
-└── ☸️ Kubernetes-Manifests-file/           # GitOps manifests (Kustomize)
+└── Kubernetes-Manifests-file/
     │
-    ├── argocd/                            # ArgoCD Application definitions
-    │   ├── app-staging.yaml              # Tetris — Staging ArgoCD App
-    │   └── app-prod.yaml                 # Tetris — Production ArgoCD App
+    ├── argocd/
+    │   ├── app-of-apps                 # Root ArgoCD Application (App-of-Apps)
+    │   └── applications/
+    │       ├── staging.yaml            # ArgoCD Application → overlays/staging (auto-sync)
+    │       └── prod.yaml               # ArgoCD Application → overlays/prod (manual sync)
     │
-    ├── base/                              # Shared Kubernetes base configs
-    │   ├── deployment.yaml               # Base Deployment manifest
-    │   ├── service.yaml                  # Service definition
-    │   └── kustomization.yaml            # Base kustomization
+    ├── base/                           # Environment-agnostic Kustomize base
+    │       deployment.yaml             # tetris-deployment (1 replica, port 3000)
+    │       kustomization.yaml
+    │       service.yaml
     │
-    └── overlays/                          # Environment-specific overrides
-        ├── staging/
-        │   ├── ingress.yaml              # Staging ingress rules
-        │   └── kustomization.yaml        # Staging image + patches
+    └── overlays/
+        ├── prod/
+        │       ingress.yaml
+        │       kustomization.yaml      # images: houssemdhahri93/tetris → v2.0.0
         │
-        └── prod/
-            ├── ingress.yaml              # Production ingress rules
-            └── kustomization.yaml        # Prod image + patches
+        └── staging/
+                ingress.yaml
+                kustomization.yaml      # images: houssemdhahri93/tetris → v1.0.0
 ```
 
 ---
 
 ## 🔄 CI/CD Pipeline
 
-The Jenkins pipeline is triggered automatically on every push to `main` and consists of **13 stages**:
+A **single declarative Jenkins pipeline** builds the application (currently sourced from `Tetris-V2`), triggered automatically on `githubPush()`:
 
 ```
 🧹 Clean Workspace
@@ -141,149 +147,137 @@ The Jenkins pipeline is triggered automatically on every push to `main` and cons
 📥 Checkout (GitHub)
     │
     ▼
-🏷️  Set Image Tag  ──────────── git tag → IMAGE_TAG
-    │                           fallback → sha-<commit>
-    ▼
-⚙️  Install Dependencies (npm ci)
+🏷️  Set Image Tag ─────────────── git tag, or sha-<short-commit> fallback
     │
     ▼
-⚡ Quality Checks (parallel)
-    ├── 🔎 Lint (ESLint)
-    └── 🧪 Unit Tests + Coverage (JUnit report)
+⚙️  Install Dependencies ───────── npm ci
     │
     ▼
-🔬 Trivy FS Scan ─────────────── vuln + secret | HIGH, CRITICAL
+⚡ Quality Checks (parallel) ───── Lint + Unit Tests (coverage, JUnit)
     │
     ▼
-📊 SonarQube Analysis ────────── SAST static analysis
+🛡️  Trivy Filesystem Scan ──────── vuln + secret scan (HIGH/CRITICAL)
     │
     ▼
-🚦 Quality Gate ──────────────── aborts pipeline if failed
+📊 SonarQube Analysis (Tetris_v2)
     │
     ▼
-🔨 Build (npm run build)
+🚦 Quality Gate ─────────────────── pipeline aborts on failure
     │
     ▼
-🐳 Docker Build ──────────────── tagged with IMAGE_TAG + latest
+🔨 npm run build
     │
     ▼
-🔬 Trivy Image Scan ──────────── vuln scan + SBOM (CycloneDX)
-    │                            ❌ exits 1 on CRITICAL
-    ▼
-📤 Push to DockerHub
+🐳 Docker Build ──────────────────── tagged {IMAGE_TAG} + latest
     │
     ▼
-🔄 Update Staging Manifest ───── kustomize edit → git push
+🛡️  Trivy Image Scan + SBOM ─────── fails hard on CRITICAL CVEs
     │
     ▼
-✋ Approve Prod (Manual Gate) ── only if APPLY_PROD=true
+📤 Push to Docker Hub (houssemdhahri93/tetris)
     │
     ▼
-🔄 Update Prod Manifest ──────── kustomize edit → git push
+🔄 Update Staging (Kustomize + Git push) ──► ArgoCD auto-syncs
+    │
+    ▼
+✋ Manual Approval (APPLY_PROD)
+    │
+    ▼
+🔄 Update Prod (Kustomize + Git push) ──────► requires manual sync in ArgoCD
 ```
 
-### Pipeline Parameters
+> 🔑 **Key design point:** Jenkins never calls `kubectl apply` directly. It only runs `kustomize edit set image` inside the relevant overlay and pushes the change to Git — **ArgoCD is the only thing that ever talks to the cluster**, keeping the pipeline fully GitOps-compliant.
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `APPLY_PROD` | `false` | Enable production deployment stage |
+> 🏷️ **On versioning:** the pipeline computes `IMAGE_TAG` from the latest Git tag (or a `sha-<commit>` fallback) and applies it to whichever overlay it updates. The `v1.0.0` / `v2.0.0` tags currently pinned in staging/prod reflect a deliberate version promotion — staging still running the previous release while production has been promoted to the newer one.
 
-### Image Tagging Strategy
+### Security & Quality Tooling
 
-```
-Priority 1 → git tag        (e.g., v1.2.0)
-Priority 2 → git commit SHA (e.g., sha-a3f1c9b)
-```
-
----
-
-## 🔐 Security (DevSec)
-
-Security is enforced at **three layers** of the pipeline:
-
-### 1. 🔬 Trivy Filesystem Scan
-- Scans source code and `node_modules` for known vulnerabilities and hardcoded secrets
-- Severity filter: **HIGH** and **CRITICAL**
-- Output: `trivy-fs-report.json` (archived as build artifact)
-
-### 2. 📊 SonarQube SAST Analysis
-- Static Application Security Testing on JavaScript source
-- Integrated with LCOV coverage reports
-- Pipeline **aborts** if Quality Gate fails
-
-### 3. 🐳 Trivy Docker Image Scan
-- Full vulnerability scan of the built container image
-- Generates **CycloneDX SBOM** (`trivy-sbom.json`)
-- **Pipeline fails** if any `CRITICAL` severity vulnerability is found in the image
-- Output: `trivy-image-report.json` (archived as build artifact)
-
-### Security Artifacts per Build
-
-| Artifact | Description |
-|----------|-------------|
-| `trivy-fs-report.json` | Filesystem vulnerability report |
-| `trivy-image-report.json` | Container image vulnerability report |
-| `trivy-sbom.json` | Software Bill of Materials (CycloneDX) |
-| `coverage/junit.xml` | Test results report |
+| Tool | What it does |
+|------|----------------|
+| **SonarQube** | Enforced quality gate (`Tetris_v2` project) |
+| **Trivy (FS scan)** | Scans source code + detects leaked secrets (`HIGH`, `CRITICAL`) |
+| **Trivy (image scan)** | Vulnerability report + **hard fail on CRITICAL CVEs** |
+| **Trivy (SBOM)** | Generates a CycloneDX Software Bill of Materials, archived per build |
 
 ---
 
 ## ☸️ Kubernetes & GitOps
 
-This project uses a **GitOps approach** powered by **ArgoCD** and **Kustomize**.
+### ArgoCD Applications
 
-### How It Works
+| Application | Path | Namespace | Sync Policy |
+|-------------|------|-----------|--------------|
+| `tetris-staging` | `overlays/staging` | `tetris-staging` | **Automated** (`prune: true`, `selfHeal: true`) — deploys as soon as Jenkins pushes a new tag |
+| `tetris-prod` | `overlays/prod` | `tetris-prod` | **Manual** — no `automated` block; requires an explicit sync in ArgoCD even after Jenkins' own approval gate |
 
-1. Jenkins updates the image tag in the overlay `kustomization.yaml` via `kustomize edit set image`
-2. Jenkins pushes the change to the `main` branch of this repo
-3. ArgoCD detects the diff and automatically syncs the cluster
+Both Applications use `CreateNamespace=true` and `ApplyOutOfSyncOnly=true` sync options.
 
-### Environments
+> 🛡️ This gives production a **double safety net**: a human must approve the promotion in Jenkins (`APPLY_PROD` parameter), *and* a human (or a separate automation) must trigger the ArgoCD sync for it to actually reach the cluster.
 
-| Environment | URL | Sync Mode | Approval |
-|-------------|-----|-----------|----------|
-| **Staging** | `http://myapp-staging.local` | Auto | ❌ None |
-| **Production** | `http://myapp-prod.local` | Auto | ✅ Manual (Jenkins `input`) |
+### Kustomize layering
 
-### Kustomize Overlay Structure
+```yaml
+# base/kustomization.yaml
+resources:
+  - deployment.yaml
+  - service.yaml
+```
 
 ```yaml
 # overlays/staging/kustomization.yaml
+resources:
+  - ../../base
+  - ingress.yaml
 images:
   - name: houssemdhahri93/tetris
-    newTag: <IMAGE_TAG>   # ← Updated by Jenkins automatically
+    newName: houssemdhahri93/tetris
+    newTag: v1.0.0
 ```
+
+```yaml
+# overlays/prod/kustomization.yaml
+resources:
+  - ../../base
+  - ingress.yaml
+images:
+  - name: houssemdhahri93/tetris
+    newName: houssemdhahri93/tetris
+    newTag: v2.0.0
+```
+
+The base `Deployment` runs a single container on port `3000`, with resource requests/limits of `512m/1Gi` CPU and `250Mi/500Mi` memory.
+
+---
+
+## 🌍 Environments & Versioning
+
+| Environment | Overlay Path | Namespace | Image Tag | Sync |
+|--------------|--------------|------------|-----------|------|
+| **Staging** | `overlays/staging` | `tetris-staging` | `v1.0.0` | Automated |
+| **Production** | `overlays/prod` | `tetris-prod` | `v2.0.0` | Manual |
+
+This setup models a realistic scenario: **staging still serves the previous release** while **production has already been promoted** to the newer version — useful for comparison testing, rollback reference, or staggered rollout validation.
 
 ---
 
 ## ⚙️ Prerequisites
 
-Make sure the following tools and services are installed and configured:
-
-| Tool | Purpose | Version |
-|------|---------|---------|
-| **Jenkins** | CI/CD orchestration | LTS |
-| **Node.js** | Build environment | 22.x |
-| **Docker** | Container runtime | 24+ |
-| **Trivy** | Security scanner | Latest |
-| **Kustomize** | K8s manifest patching | v5+ |
-| **SonarQube** | Code quality & SAST | Community/Enterprise |
-| **ArgoCD** | GitOps controller | v2.x |
-| **Kubernetes** | Container orchestration | v1.28+ |
-| **Helm** | Kubernetes package manager | v3+ |
+| Tool | Purpose |
+|------|---------|
+| **Jenkins** | CI/CD orchestration (with Node.js 22 tool configured) |
+| **Docker** | Container builds |
+| **Kustomize** | K8s manifest patching |
+| **ArgoCD** | GitOps controller |
+| **Kubernetes** | Container orchestration |
+| **SonarQube server** | Code quality gate |
+| **Trivy** | Security scanning |
 
 ### Jenkins Credentials Required
 
 | Credential ID | Type | Usage |
 |--------------|------|-------|
+| `Dockerhub` | Username/Password | Docker Hub image push |
 | `github-token` | Username/Password | GitHub checkout & GitOps push |
-| `Dockerhub` | Username/Password | DockerHub image push |
-
-### Jenkins Tools Required
-
-| Tool Name | Type |
-|-----------|------|
-| `node22` | NodeJS installation |
 
 ---
 
@@ -292,86 +286,66 @@ Make sure the following tools and services are installed and configured:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/HoussemDhahri/Tetris-Devsecops-End-to-End-Project.git
-cd Tetris-Devsecops-End-to-End-Project
+git clone https://github.com/HoussemDhahri/Tetris-app-End-to-End-Project.git
+cd Tetris-app-End-to-End-Project
 ```
 
-### 2. Configure Jenkins
-
-- Create a **Pipeline** job pointing to this repository
-- Set **Branch** to `main`
-- Enable **GitHub webhook trigger**
-- Add the required credentials (`github-token`, `Dockerhub`)
-- Configure **SonarQube server** with name `SonarQube-Server`
-
-### 3. Apply ArgoCD Applications
+### 2. Install ArgoCD
 
 ```bash
-# Tetris app
-kubectl apply -f Kubernetes-Manifests-file/argocd/app-staging.yaml
-kubectl apply -f Kubernetes-Manifests-file/argocd/app-prod.yaml
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
-### 4. Trigger the Pipeline
+### 3. Deploy the ArgoCD Applications
+
+```bash
+kubectl apply -f Kubernetes-Manifests-file/argocd/app-of-apps
+kubectl get applications -n argocd
+```
+
+Staging (`tetris-staging`) will sync automatically. Production (`tetris-prod`) will show as `OutOfSync` until manually synced:
+
+```bash
+argocd app sync tetris-prod
+```
+
+### 4. Preview Manifests Locally (without ArgoCD)
+
+```bash
+kubectl kustomize Kubernetes-Manifests-file/overlays/staging
+kubectl kustomize Kubernetes-Manifests-file/overlays/prod
+```
+
+### 5. Trigger a Deployment
 
 ```bash
 git push origin main
-# Jenkins webhook fires → pipeline starts automatically
+# Jenkins webhook fires → pipeline builds Tetris-V2
+# → pushes image to Docker Hub
+# → auto-updates staging → ArgoCD auto-syncs
+# → re-run with APPLY_PROD=true + manual Jenkins approval
+# → updates prod overlay → requires a manual `argocd app sync tetris-prod`
 ```
-
-### 5. Deploy to Production
-
-In Jenkins, trigger a build with parameter:
-```
-APPLY_PROD = true
-```
-Then approve the manual gate when prompted.
 
 ---
 
-## 🌍 Environments
+## 🗺️ Roadmap
 
-### Staging
-- **Auto-deployed** on every successful pipeline run
-- Accessible at: `http://myapp-staging.local`
-- Synced by ArgoCD from: `overlays/staging/`
-
-### Production
-- Requires `APPLY_PROD=true` pipeline parameter
-- Requires **manual approval** in Jenkins (`input` step)
-- Accessible at: `http://myapp-prod.local`
-- Synced by ArgoCD from: `overlays/prod/`
-
----
-
-## 📊 Reports & Artifacts
-
-Every Jenkins build produces and archives the following:
-
-```
-build-artifacts/
-├── trivy-fs-report.json        # FS vulnerability scan results
-├── trivy-image-report.json     # Image vulnerability scan results
-├── trivy-sbom.json             # CycloneDX SBOM
-└── coverage/
-    └── junit.xml               # Unit test results (JUnit format)
-```
-
-These are accessible directly from the Jenkins build page under **Build Artifacts**.
-
----
-
-
+- [ ] Split the pipeline (or parametrize it) so `Tetris-V1` can also be built and independently promoted
+- [ ] Add a monitoring stack (Prometheus/Grafana) for both environments
+- [ ] Add TLS / cert-manager integration for the Ingress resources
 
 ---
 
 <div align="center">
 
-**Built with ❤️ by [Houssem Dhahri](https://github.com/HoussemDhahri)**
+**Built with ❤️ — Tetris App DevOps End-to-End Project**
 
-<img src="https://img.shields.io/badge/Security-Shift--Left-red?style=flat-square"/>
 <img src="https://img.shields.io/badge/GitOps-ArgoCD-orange?style=flat-square"/>
 <img src="https://img.shields.io/badge/Pipeline-Jenkins-D24939?style=flat-square"/>
+<img src="https://img.shields.io/badge/Quality-SonarQube-4E9BCD?style=flat-square"/>
+<img src="https://img.shields.io/badge/Security-Trivy-1904DA?style=flat-square"/>
 <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square"/>
 
 </div>
