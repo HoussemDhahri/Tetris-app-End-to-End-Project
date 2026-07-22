@@ -7,7 +7,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/HoussemDhahri/Tetris-Devsecops-End-to-End-Project.git
+    repoURL: https://github.com/HoussemDhahri/Tetris-app-End-to-End-Project.git
     targetRevision: main
     path: Kubernetes-Manifests-file/overlays/staging
 
@@ -21,3 +21,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true

@@ -8,13 +8,13 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/HoussemDhahri/Tetris-Devsecops-End-to-End-Project.git
+    repoURL: https://github.com/HoussemDhahri/Tetris-app-End-to-End-Project.git
     targetRevision: main
     path: Kubernetes-Manifests-file/overlays/prod
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: prod
+    namespace: tetris-prod
 
   syncPolicy:
     syncOptions:
